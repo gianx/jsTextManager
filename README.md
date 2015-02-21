@@ -1,0 +1,2 @@
+# jsTextManager
+jsTextManager
