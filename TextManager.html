@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head><title>Text Manager</title>
+<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+<style>
+    body {
+        font: 15px solid; font-family: arial; 
+    }
+    #lines, #words { color: red; }
+    #container { min-width:400px; }
+    #textdiv{ float:left;  padding-left: }
+    #simpleactions { overflow:hidden;  padding-left: 10px}
+    button {
+            border:1px solid #7d99ca; border-radius: 3px;
+            font-size:12px; font-family:arial, helvetica, sans-serif;  color: #FFFFFF; font-weight:bold; 
+            padding: 3px 3px 3px 3px; margin: 2px 2px 2px 2px; text-decoration:none; display:inline-block;
+            text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+            background-color: #a5b8da; 
+            background-image: linear-gradient(#a5b8da, #7089b3);
+            filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#a5b8da, endColorstr=#7089b3);
+    }
+    .button-red{ color: red; }
+    .button-yellow{ color: yellow; }
+    .mytitle{color:white; width:100%; background-color: #f26a06; display: block; padding:5px 5px 5px 5px;}
+    </style>
+</style>
+</head>
+<body>
+<!-- Main container -->
+<div id="container" >
+    <!-- Text container -->
+    <div id="textdiv">
+        <textarea id="mytext" cols=70 rows=40 onkeyup="JavaScript: observer()" onmouseup="JavaScript: observer()">Ecco un po' di url
+www.gianx.com
+e anche
+
+www.gianlucanieri.com
+
+Mandami una mail a gianx@gianx.com oppure 
+mailto:gianluca@gianlucanieri.com
+cella(1,1)|cella(1,2)|cella(1,3)
+cella(2,1)|cella(2,2)|cella(2,3)
+cella(3,1)|cella(3,2)|cella(3,3)
+
+
+</textarea><br>
+        There are <span id="characters"></span> chars in <span id="lines"></span> lines.  
+        
+    </div>
+    <!-- Action without parameters -->
+    <div id="simpleactions">
+        <button class="go button-red" id="cancel" >CLEAR TEXT</button><br>
+        <!-- 
+        <button class="go button-yellow" id="history-back" >&lt;&lt;&lt;</button>
+        <button class="go button-yellow" id="history-clear" >CLEAR HISTORY</button>
+        <button class="go button-yellow" id="history-forward" >&gt;&gt;&gt;</button><br>
+        -->
+        <button class="go" id="upper">ALL UPPER</button>
+        <button class="go" id="lower">ALL LOWER</button>
+        <button class="go" id="emptylines">REMOVE EMPTY LINES</button>
+        <span class="mytitle">Extract:</span>
+        <button class="go" id="extracturl">URLS</button>
+        <button class="go" id="extractemail">EMAIL</button>
+        <span class="mytitle">Encode/Decode:</span>
+        <button class="go" id="encodeuri">URI ENCODE</button>
+        <button class="go" id="decodeuri">URI DECODE</button>
+        <button class="go" id="xmlencode">XML ENCODE</button>
+        <button class="go" id="xmldecode">XML DECODE</button>
+        <span class="mytitle">Rows: </span>
+        <button class="go" id="enumerate">ENUMERATE</button>
+        <button class="go" id="ltrim">LTRIM</button>
+        <button class="go" id="rtrim">RTRIM</button><br>
+        <span class="mytitle">Single parameter: </span>
+        <!--
+        Value <input type="text" id="param" value=""><br>
+        <button class="go" id="count">COUNT OCCURRENCES</button>
+        <button class="go" id="remove">REMOVE</button><span id="countresult"></span><br>
+        Insert<button class="go" id="beforeall">BEFORE ALL</button>
+        <button class="go" id="afterall">AFTER ALL</button>
+        <button class="go" id="beforeeach">BEFORE EACH</button>
+        <button class="go" id="aftereach">AFTER EACH</button> <br>
+        <button class="go" id="split">USE TO SPLIT</button>
+        <button class="go" id="concatenate">USE TO JOIN</button>
+        <button class="go" id="encapsulate">USE TO ENCAPSULATE</button><br>
+        <button class="go" id="toparameter">DELETE TO</button>
+        <button class="go" id="fromparameter">DELETE FROM</button><br>
+        -->
+
+        Parameter: <input type="text" size=20 id="param">
+        <select id="singlepar">
+            <option value="afterall">AFTER ALL</option>
+            <option value="aftereach">AFTER EACH</option>
+            <option value="beforeall">BEFORE ALL</option>
+            <option value="beforeeach">BEFORE EACH</option>
+            <option value="count">COUNT</option>
+            <option value="fromparameter">DELETE FROM CHAR</item>
+            <option value="toparameter">DELETE TO UP TO CHAR</option>
+            <option value="encapsulate">ENCAPSULATE</option>
+            <option value="concatenate">JOIN</option>
+            <option value="remove">REMOVE</option>
+            <option value="split">SPLIT</option>
+        </select>
+        <button class="go" id="doactions">GO</button>
+
+        <span class="mytitle">Delete:</span>
+        <button class="go" id="deletefirst">FIRST</button>
+        <button class="go" id="deletelast">LAST</button>
+        <input type="text" id="ncharstodelete" value="" size=3>
+        chars of each lines;<br>
+        <span class="mytitle">Search for:</span>
+        <input type="text" id="searchfor" value=""> 
+        and  <button class="go" id="replace">REPLACE</button> 
+        with <input type="text" id="replacewith" value=""><br>
+        <span class="mytitle">Pad:</span>
+         lines with <input type="text" id="padchar" value="" size=3> at length <input type="text" id="padlength" value="" size=3> 
+        <button class="go" id="padleft">ON LEFT</button>
+        <button class="go" id="padright">ON RIGHT</button>
+        <br>
+        <br>
+    </div>
+    <div style="clear:both">&nbsp;</div> 
+</div>
+
+<div id="myhistory"></div>
+<script>
+
+texthistory = [];
+
+xmlencoded = 0;
+uriencoded = 0;
+
+function observer() {
+    nchars = document.getElementById('mytext').value.length;
+    nlines = document.getElementById('mytext').value.split("\n").length;
+    document.getElementById('characters').innerHTML = nchars;
+    document.getElementById('lines').innerHTML = nlines;
+}
+// ----------- Obj enhancement
+if (!String.prototype.lpad) {
+  (function() {
+        String.prototype.lpad = function(padchar, padlength) {
+            var str = this;
+            while (str.length < padlength)
+                str = padchar + str;
+            return str;
+        }
+    })();
+}
+
+if (!String.prototype.rpad) {
+  (function() {
+        String.prototype.rpad = function(padchar, padlength) {
+            var str = this;
+            while (str.length < padlength)
+                str = str+padchar;
+            return str;
+        }
+    })();
+}
+
+if (!String.prototype.ltrim) {
+  (function() {
+    String.prototype.ltrim = function() {
+      return this.replace(/^\s+/, '');
+    };
+  })();
+}
+
+if (!String.prototype.rtrim) {
+  (function() {
+    String.prototype.rtrim = function() {
+      return this.replace(/\s+$/, '');
+    };
+  })();
+}
+
+// ----------- /Obj enhancement
+
+// ----------- DOM Ready
+// All except...
+if ( document.addEventListener ) {
+  document.addEventListener( "DOMContentLoaded", function(){
+    document.removeEventListener( "DOMContentLoaded", arguments.callee, false);
+    documentReady();
+  }, false );
+
+// ... IE of course!
+} else if ( document.attachEvent ) {
+  document.attachEvent("onreadystatechange", function(){
+    if ( document.readyState === "complete" ) {
+      document.detachEvent( "onreadystatechange", arguments.callee );
+      documentReady();
+    }
+  });
+}
+// ----------- /DOM Ready
+
+// ----------- MAIN (documentReady)
+
+function documentReady() {
+    // Attach the onClick event to all buttons of the class "GO"
+    btns = document.getElementsByTagName('button');
+    btns = Array.prototype.slice.call(btns);
+    btns.forEach(function(button) {
+        if(button.classList.contains('go')) {
+            button.onclick = function() {
+                 return clickFunction(this.id);   
+            };
+        }
+    observer();
+    });
+
+}
+// ----------- /MAIN (documentReady)
+
+// ----------- TEXT MODIFIED
+
+// ----------- /TEXT MODIFIED
+
+// ----------- Button pressed 
+function clickFunction(action) {
+    text = document.getElementById('mytext').value;
+    value = document.getElementById('param').value;
+    padchar = document.getElementById('padchar').value;
+    padlength = document.getElementById('padlength').value;
+    ncharstodelete = document.getElementById('ncharstodelete').value;
+    newtext = "";
+    if (action=="doactions") {
+        elem = document.getElementById("singlepar");
+        action = elem.options[elem.selectedIndex].value;
+    }
+    switch (action) {
+        case "upper":
+            newtext = text.toUpperCase();
+            break;
+        case "lower":
+            newtext = text.toLowerCase();
+            break;
+        case "beforeall":
+            newtext = value+"\n"+text
+            break;
+        case "afterall":
+            newtext = text+"\n"+value;
+            break;
+        case "concatenate":
+            lines = text.split("\n");
+            newtext = lines.join(value);
+            break;
+        case "replace":
+            searchfor = document.getElementById('searchfor').value;
+            replacewith = document.getElementById('replacewith').value;
+            newtext = text.split(searchfor).join(replacewith);
+            break;
+        case "remove":
+            newtext = text.split(value).join('');
+            break;
+        case "cancel":
+            newtext = "";
+            break;
+        case "split":
+            newtext = text.split(value).join('\n');
+            break;
+        case "join":
+            newtext = text.split("\n").join(value);
+            break;
+        case "count":
+            val = text.split(value).length-1;
+            document.getElementById('countresult').appendChild(document.createTextNode("There are "+val+" occurrences of the string "+value));
+            newtext = text;
+            break;
+        case "xmlencode":
+            if (xmlencoded==0) {
+                text = text.replace("&","&amp;");
+                text = text.replace("'","&apos;");
+                text = text.replace("\"","&quot;");
+                text = text.replace("<","&lt;");
+                text = text.replace(">","&gt;");
+                newtext = text;
+                xmlencoded = 1;
+            } else {
+                alert ("Text already encoded")
+                newtext = text;
+            }
+            break;
+        case "xmldecode":
+            text = text.replace("&amp;","&");
+            text = text.replace("&apos;","'");
+            text = text.replace("&quot;","\"");
+            text = text.replace("&lt;","<");
+            text = text.replace("&gt;",">");
+            newtext = text;
+            xmlencoded = 0;
+            break;
+        case "extracturl":
+            var regex = /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/ig;
+            newtext = text.match(regex).join("\n");
+            break;
+        case "extractemail":
+            var regex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
+            newtext = text.match(regex).join("\n");
+            break;
+        case "emptylines":
+            var regex = /^\s*[\r\n]/gmi;
+            newtext = text.replace(regex,"");
+            break;
+        case "splitcolumns":
+            alert("Split not yet implemented");
+            break;
+        default:
+            
+            // Multi lines actions
+            lines = text.split("\n");
+            limit = lines.length;
+            line_count = 0;
+
+            // Loop on each line
+            for(var x=0;x<limit;x++){ 
+                line_count ++;
+                if (action=="beforeeach")  newtext += value + lines[x] ;
+                if (action=="aftereach") newtext += lines[x] + value;
+                if (action=="enumerate") newtext += line_count + lines[x];
+                if (action=="encapsulate") newtext += value + lines[x] + value;
+                if (action=="padleft") newtext += lines[x].lpad(padchar,padlength);
+                if (action=="padright") newtext += lines[x].rpad(padchar,padlength);
+                if (action=="deletefirst") newtext += lines[x].slice(ncharstodelete,lines[x].length);
+                if (action=="deletelast") newtext += lines[x].slice(0,lines[x].length-ncharstodelete);
+                if (action=="encodeuri") newtext += encodeURIComponent(lines[x]).replace(/'/g,"%27").replace(/"/g,"%22");
+                if (action=="decodeuri") newtext += decodeURIComponent(lines[x].replace(/\+/g,  " "));
+                if (action=="toparameter") { newtext += lines[x].split(value).slice(0,1) + value }
+                if (action=="fromparameter") { newtext += value + lines[x].split(value).slice(1).join(value)}
+                if (action=="ltrim")  newtext += value + lines[x].ltrim();
+                if (action=="rtrim")  newtext += value + lines[x].rtrim() ;
+                // if it's not the last line add \n
+                if (x<limit-1) { 
+                    newtext += "\n"; 
+                } 
+            }
+            break;
+    } // case
+
+    // Output
+    document.getElementById('mytext').value = newtext;
+
+    // Clear fields
+    document.getElementById('param').value = "";
+    document.getElementById('searchfor').value = "";
+    document.getElementById('replacewith').value = "";
+    document.getElementById('padchar').value = "";
+    padlength = document.getElementById('padlength').value = "";
+
+    // History
+    if (texthistory[texthistory.length-1] != newtext) {
+        texthistory.push(newtext);
+    } 
+}
+</script>
+</body>
+</html>
