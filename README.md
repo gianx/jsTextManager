@@ -82,45 +82,22 @@ _ON LEFT_: Adds a number of a specified char on the left of each row to reach th
 
 _ON RIGHT_: Adds a number of a specified char on the right of each row to reach the specified length;
 
-## Example of use:
+### SPECIAL
 
-### DB INSERT:
+_ORACLE IN_: Transform the text in a text suitable for using with PL-SQL insert putting all lines between "'", adding "," at the end of the line and putting all the text between "()".
 
-I often have the need to convert an Enxcel column in a statement for a db search, for exaple a SELECT * FROM table WHERE field IN (RANGE).
+For example:
 
-To do this:
-
-First copy the column in jsTextManager from Excel:
+	A
+	B
+	C
+	D
+	E
 	
-	
-	VALUE1
-	VALUE2
-	VALUE3
-	...
-	VALUEN
-	
-Then use ENCAPSULATE specifying ' as parameter:
+Becomes:
 
-	'VALUE1'
-	'VALUE2'
-	'VALUE3'
-	...
-	'VALUEN'
-
-Now use , as parameter and choose AFTER EACH:
-
-	'VALUE1',
-	'VALUE2',
-	'VALUE3',
-	...
-	'VALUEN',
-	
-Now you can easyly delete the last column and encapsulate between () or by hand or using BEFORE ALL and AFTER ALL:
-
-	('VALUE1',
-	'VALUE2',
-	'VALUE3',
-	...
-	'VALUEN')
-	
-And voilà!
+	('A',
+	'B',
+	'C',
+	'D',
+	'E')

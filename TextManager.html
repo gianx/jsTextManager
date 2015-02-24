@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head><title>Text Manager</title>
-<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
 <style>
     body {
         font: 15px solid; font-family: arial; 
@@ -36,12 +35,9 @@
     </div>
     <!-- Action without parameters -->
     <div id="simpleactions">
-        <button class="go button-red" id="cancel" >CLEAR TEXT</button><br>
-        <!-- 
-        <button class="go button-yellow" id="history-back" >&lt;&lt;&lt;</button>
-        <button class="go button-yellow" id="history-clear" >CLEAR HISTORY</button>
-        <button class="go button-yellow" id="history-forward" >&gt;&gt;&gt;</button><br>
-        -->
+        <button class="go button-red" id="cancel" >CLEAR TEXT</button>
+        &nbsp;&nbsp;&nbsp;
+        <button class="go button-yellow" id="selectall">SELECT ALL</button><br>
         <button class="go" id="upper">ALL UPPER</button>
         <button class="go" id="lower">ALL LOWER</button>
         <button class="go" id="emptylines">REMOVE EMPTY LINES</button>
@@ -58,20 +54,6 @@
         <button class="go" id="ltrim">LTRIM</button>
         <button class="go" id="rtrim">RTRIM</button><br>
         <span class="mytitle">Single parameter: </span>
-        <!--
-        Value <input type="text" id="param" value=""><br>
-        <button class="go" id="count">COUNT OCCURRENCES</button>
-        <button class="go" id="remove">REMOVE</button><span id="countresult"></span><br>
-        Insert<button class="go" id="beforeall">BEFORE ALL</button>
-        <button class="go" id="afterall">AFTER ALL</button>
-        <button class="go" id="beforeeach">BEFORE EACH</button>
-        <button class="go" id="aftereach">AFTER EACH</button> <br>
-        <button class="go" id="split">USE TO SPLIT</button>
-        <button class="go" id="concatenate">USE TO JOIN</button>
-        <button class="go" id="encapsulate">USE TO ENCAPSULATE</button><br>
-        <button class="go" id="toparameter">DELETE TO</button>
-        <button class="go" id="fromparameter">DELETE FROM</button><br>
-        -->
 
         Parameter: <input type="text" size=20 id="param">
         <select id="singlepar">
@@ -102,6 +84,9 @@
          lines with <input type="text" id="padchar" value="" size=3> at length <input type="text" id="padlength" value="" size=3> 
         <button class="go" id="padleft">ON LEFT</button>
         <button class="go" id="padright">ON RIGHT</button>
+        <span class="mytitle">Special:</span>
+        <button class="go" id="oraclein">ORACLE IN</button>
+        
         <br>
         <br>
     </div>
@@ -293,6 +278,10 @@ function clickFunction(action) {
         case "splitcolumns":
             alert("Split not yet implemented");
             break;
+        case "selectall":
+            document.getElementById('mytext').select();
+            newtext = text;
+            break;
         default:
             
             // Multi lines actions
@@ -317,10 +306,14 @@ function clickFunction(action) {
                 if (action=="fromparameter") { newtext += value + lines[x].split(value).slice(1).join(value)}
                 if (action=="ltrim")  newtext += value + lines[x].ltrim();
                 if (action=="rtrim")  newtext += value + lines[x].rtrim() ;
+                if (action=="oraclein") newtext += "'" + lines[x] + "',";
                 // if it's not the last line add \n
                 if (x<limit-1) { 
                     newtext += "\n"; 
                 } 
+                if ((x==limit-1) && (action=="oraclein")) {
+                    newtext = "("+newtext.slice(0,newtext.length-1)+")"
+                }
             }
             break;
     } // case
